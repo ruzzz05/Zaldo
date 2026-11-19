@@ -1,0 +1,104 @@
+ZALDO - MEMORIA v5 (SEMANA 5) - TEXTO PARA AÑADIR
+Archivo final: Grupo_B-Memoria_v5.pdf
+Cambiar en la portada: "Entrega 1, 2, 3, 4 y 5", fecha y "Memoria v5".
+
+AVISO: los puntos marcados con [REVISAR] son borradores inventados.
+Hay que sustituirlos por lo que pase de verdad en la prueba con TalkBack
+y por las capturas reales antes de entregar.
+
+======================================================================
+SEMANA 5 - IMPLEMENTACIÓN ACCESIBLE EN FLUTTER
+======================================================================
+
+1. Estado de la implementación
+Zaldo v1 está implementada en Flutter con datos locales (SharedPreferences).
+Los tres recorridos críticos se completan de principio a fin:
+  - Recorrido 1: registrar un gasto (importe, categoría, fecha, descripción).
+  - Recorrido 2: consultar el historial, filtrar por fechas y categoría y ver
+    el detalle de un gasto.
+  - Recorrido 3: consultar el resumen mensual (mes, total y desglose por
+    categoría).
+Repositorio: [REVISAR: pegar URL del repositorio]
+Tests automáticos: 115 tests (recorridos, accesibilidad, contraste, dominio).
+
+2. Widget estándar con semántica suficiente
+Los widgets estándar de Flutter ya comunican nombre, rol y estado sin añadir
+nada:
+  - NavigationBar: TalkBack anuncia "Inicio", "Historial" y "Resumen" como
+    pestañas y cuál está seleccionada.
+  - TextField "Importe (€)": el lector anuncia la etiqueta y que es un campo
+    editable.
+  - FilledButton "Guardar gasto" y OutlinedButton "Cancelar": se anuncian como
+    botones con su texto.
+No hizo falta Semantics adicional en estos casos.
+
+3. Semantics explícito (casos en los que hubo que añadirlo)
+  - Categorías (CategoryChoice): chip personalizado. Se añadió Semantics con
+    nombre, rol de botón, estado "seleccionado" y una pista ("Cafés, comidas y
+    supermercado"). Sin esto el lector no distinguiría la categoría elegida.
+  - Mensajes de error (ErrorLine): Semantics con prefijo "Error:" y región
+    viva, para que se anuncie al aparecer. El icono se excluye del árbol para
+    no leerlo dos veces.
+  - Resumen: el total se lee como "Total gastado: 26 euros con 49 céntimos" y
+    cada categoría como "Ocio: 25 euros, 52 por ciento del total". La barra de
+    progreso es decorativa y se excluye, porque el dato ya está en texto.
+  - Gráfico de barras diario (Inicio): un único nodo semántico con el resumen
+    ("Gráfico de barras: gasto de los últimos 7 días. Total... Mayor gasto el
+    martes 17...") y una lista de texto debajo con el total de cada día. Así no
+    hace falta interpretar el gráfico.
+
+4. Escala de texto
+La app no bloquea el escalado del sistema. No hay selector propio: sigue el
+tamaño de fuente de Android. Se probó a 1x, 2x y 3x con tests automáticos
+(sin desbordamientos, targets de 48x48 conservados, contraste correcto).
+Durante la prueba se corrigió un desbordamiento de la leyenda del gráfico con
+texto grande.
+Capturas: [REVISAR: insertar captura de Inicio y de Añadir gasto a 100 % y a 200 %]
+
+5. Orden de lectura
+Secuencia esperada en Resumen: título "Resumen económico", mes, botones de
+cambio de mes, total gastado, "Gasto por categoría", categorías de mayor a
+menor gasto.
+Secuencia en Añadir gasto: importe, categoría y sus opciones, fecha, descripción,
+"Guardar gasto", "Cancelar".
+Se comprueba en test automático (week5_test.dart) y con TalkBack:
+[REVISAR: confirmar con la prueba real que coincide]
+
+6. Targets y separación
+Controles de al menos 48x48 y sin solapamiento, comprobado con
+androidTapTargetGuideline en todas las pantallas a 1x y 2x.
+
+7. Estados y feedback
+  - Seleccionado: categoría con color, check y estado semántico.
+  - Error: icono + texto en rojo, anunciado como región viva.
+  - Éxito: confirmación "Gasto guardado" con icono y texto.
+  - Deshabilitado: "Mes siguiente" se desactiva en el mes actual.
+  - Cargando: el botón cambia a "Guardando…" y se desactiva mientras se
+    guarda, para evitar gastos duplicados por doble pulsación.
+
+8. Gráfico de barras diario (novedad de la v5)
+Barras apiladas de los últimos 7 días en la pantalla de Inicio. Cada categoría
+tiene un color y además un patrón distinto (rayas, puntos, líneas, cuadrícula,
+liso), de modo que no se depende solo del color (RNF03). Todos los colores
+tienen contraste mínimo 3:1 con el fondo. Leyenda visible con icono y nombre,
+y alternativa en texto (lista de totales por día).
+
+9. Primera prueba con TalkBack
+Dispositivo: [REVISAR: modelo, versión de Android]
+Recorrido probado: registrar un gasto de 4,50 € (Recorrido 1).
+Problemas encontrados (borrador, [REVISAR] y sustituir por los reales):
+  P1. Al pulsar "Guardar gasto" con el importe vacío, no quedaba claro qué
+      campo fallaba. Corrección: el error se anuncia como región viva con el
+      texto "Error: ...". Estado: corregido.
+  P2. El gráfico del Inicio se leía barra a barra de forma confusa.
+      Corrección: un único nodo con resumen + lista de texto por día.
+      Estado: corregido.
+  P3. [REVISAR: añadir cualquier otro problema real que aparezca]
+Pendiente para la semana 6: auditoría completa de los tres recorridos.
+
+10. Checklist final
+  [x] Los tres recorridos se pueden ejecutar en la app.
+  [x] Los controles no dependen de una etiqueta puramente visual.
+  [x] Los componentes personalizados han sido revisados semánticamente.
+  [x] La app sigue siendo usable con texto aumentado.
+  [x] La navegación no cambia de contexto de forma inesperada.
